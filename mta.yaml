@@ -3,150 +3,153 @@ ID: cap-temp
 description: A simple CAP project.
 version: 1.0.0
 modules:
-- name: cap-temp-srv
-  type: nodejs
-  path: gen/srv
-  requires:
-  - name: cap-temp-auth
-  - name: cap-temp-db
-  - name: cap-temp-destination
-  provides:
-  - name: srv-api
-    properties:
-      srv-url: ${default-url}
-  parameters:
-    buildpack: nodejs_buildpack
-    instances: 1
-  build-parameters:
-    builder: npm-ci
-- name: cap-temp-db-deployer
-  type: hdb
-  path: gen/db
-  requires:
-  - name: cap-temp-db
-  parameters:
-    buildpack: nodejs_buildpack
-- name: cap-temp
-  type: approuter.nodejs
-  path: app/router
-  requires:
-  - name: srv-api
-    group: destinations
-    properties:
-      forwardAuthToken: true
-      name: srv-api
-      url: ~{srv-url}
-  - name: cap-temp-auth
-  - name: cap-temp-destination
-  - name: cap-temp-html5-runtime
-  provides:
-  - name: app-api
-    properties:
-      app-protocol: ${protocol}
-      app-uri: ${default-uri}
-  parameters:
-    disk-quota: 256M
-    keep-existing-routes: true
-    memory: 256M
-- name: cap-temp-app-deployer
-  type: com.sap.application.content
-  path: gen
-  requires:
-  - name: cap-temp-auth
-  - name: srv-api
-  - name: cap-temp-html5-repo-host
+  - name: cap-temp-srv
+    type: nodejs
+    path: gen/srv
+    requires:
+      - name: cap-temp-auth
+      - name: cap-temp-db
+      - name: cap-temp-destination
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+      instances: 1
+    build-parameters:
+      builder: npm-ci
+  - name: cap-temp-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: cap-temp-db
+    parameters:
+      buildpack: nodejs_buildpack
+  - name: cap-temp
+    type: approuter.nodejs
+    path: app/router
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          forwardAuthToken: true
+          name: srv-api
+          url: ~{srv-url}
+      - name: cap-temp-auth
+      - name: cap-temp-destination
+      - name: cap-temp-html5-runtime
+    provides:
+      - name: app-api
+        properties:
+          app-protocol: ${protocol}
+          app-uri: ${default-uri}
+    parameters:
+      disk-quota: 256M
+      keep-existing-routes: true
+      memory: 256M
+  - name: cap-temp-app-deployer
+    type: com.sap.application.content
+    path: gen
+    requires:
+      - name: cap-temp-auth
+      - name: srv-api
+      - name: cap-temp-html5-repo-host
+        parameters:
+          config:
+            HTML5Runtime_enabled: true
+          content-target: true
     parameters:
       config:
         HTML5Runtime_enabled: true
-      content-target: true
-  parameters:
-    config:
-      HTML5Runtime_enabled: true
-      init_data:
-        instance:
-          destinations:
-          - Authentication: NoAuthentication
-            HTML5.DynamicDestination: true
-            HTML5.ForwardAuthToken: true
-            Name: srv-api
-            ProxyType: Internet
-            Type: HTTP
-            URL: ~{srv-api/srv-url}
-          - Authentication: NoAuthentication
-            Name: ui5
-            ProxyType: Internet
-            Type: HTTP
-            URL: https://ui5.sap.com
-          existing_destinations_policy: update
-  build-parameters:
-    build-result: app/
-    requires:
-    - artifacts:
-      - captempui.zip
-      name: captempui
-      target-path: app/
-- name: captempui
-  type: html5
-  path: app/cap-temp-ui
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
+        init_data:
+          instance:
+            destinations:
+              - Authentication: NoAuthentication
+                HTML5.DynamicDestination: true
+                HTML5.ForwardAuthToken: true
+                Name: srv-api
+                ProxyType: Internet
+                Type: HTTP
+                URL: ~{srv-api/srv-url}
+              - Authentication: NoAuthentication
+                Name: ui5
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://ui5.sap.com
+            existing_destinations_policy: update
+    build-parameters:
+      build-result: app/
+      requires:
+        - artifacts:
+            - captempui.zip
+          name: captempui
+          target-path: app/
+  - name: captempui
+    type: html5
+    path: app/cap-temp-ui
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+        - npm ci
+        - npm run build
+      supported-platforms:
+        []
 resources:
-- name: cap-temp-auth
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      oauth2-configuration:
-        redirect-uris:
-        - https://*~{app-api/app-uri}/**
-      tenant-mode: dedicated
-      xsappname: cap-temp-${org}-${space}
-    path: ./xs-security.json
-    service: xsuaa
-    service-plan: application
-  requires:
-  - name: app-api
-- name: cap-temp-db
-  type: com.sap.xs.hdi-container
-  parameters:
-    service: hana
-    service-plan: hdi-shared
-- name: cap-temp-destination
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      HTML5Runtime_enabled: false
-      init_data:
-        instance:
-          destinations:
-          - Authentication: NoAuthentication
-            Name: ui5
-            ProxyType: Internet
-            Type: HTTP
-            URL: https://ui5.sap.com
-          existing_destinations_policy: update
-    service: destination
-    service-plan: lite
-- name: cap-temp-html5-repo-host
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: html5-apps-repo
-    service-plan: app-host
-- name: cap-temp-html5-runtime
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: html5-apps-repo
-    service-plan: app-runtime
+  - name: cap-temp-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        oauth2-configuration:
+          redirect-uris:
+            - https://*~{app-api/app-uri}/**
+        tenant-mode: dedicated
+        xsappname: cap-temp-${org}-${space}
+      path: ./xs-security.json
+      service: xsuaa
+      service-plan: application
+    requires:
+      - name: app-api
+  - name: cap-temp-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: cap-temp-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        HTML5Runtime_enabled: false
+        init_data:
+          instance:
+            destinations:
+              - Authentication: NoAuthentication
+                Name: ui5
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://ui5.sap.com
+            existing_destinations_policy: update
+      service: destination
+      service-plan: lite
+  - name: cap-temp-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+  - name: cap-temp-html5-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
 build-parameters:
   before-all:
-  - builder: custom
-    commands:
-    - npm ci
-    - npx cds build --production
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
