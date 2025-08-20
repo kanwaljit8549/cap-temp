@@ -1,0 +1,2 @@
+sap.ui.define(["sap/ui/core/mvc/Controller"],e=>{"use strict";return e.extend("captempui.controller.View1",{onInit(){let e=this.getOwnerComponent().getModel();console.log(e);this.getView().bindElement({path:"/Books('123')",parameters:{}})}})});
+//# sourceMappingURL=View1.controller.js.map

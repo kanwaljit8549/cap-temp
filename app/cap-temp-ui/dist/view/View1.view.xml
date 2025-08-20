@@ -1,0 +1,10 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" controllerName="captempui.controller.View1">
+<Page id="page" title="{i18n>title}">
+<VBox>
+<Label text="Book ID"/>
+<Input value="{ID}"/>
+<Label text="Book Name"/>
+<Input value="{title}"/>
+</VBox>
+</Page>
+</mvc:View>
