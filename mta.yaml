@@ -98,6 +98,38 @@ modules:
         - npm run build
       supported-platforms:
         []
+
+  - name: cap-temp-destinations
+    type: com.sap.application.content
+    requires:
+      - name: cap-temp-auth
+        parameters:
+          service-key:
+            name: cap-temp-auth-key
+      - name: cap-temp-html5-repo-host
+        parameters:
+          service-key:
+            name: cap-temp-html5-repo-host-key
+      - name: srv-api
+      - name: cap-temp-destination
+        parameters:
+          content-target: true
+    build-parameters:
+      no-source: true
+    parameters:
+      content:
+        instance:
+          existing_destinations_policy: update
+          destinations:
+            - Name: cap-temp-html5-repository
+              ServiceInstanceName: cap-temp-html5-repo-host
+              ServiceKeyName: cap-temp-html5-repo-host-key
+              sap.cloud.service: captemp.service
+            - Name: cap-temp-auth
+              Authentication: OAuth2UserTokenExchange
+              ServiceInstanceName: cap-temp-auth
+              ServiceKeyName: cap-temp-auth-key
+              sap.cloud.service: captemp.service
 resources:
   - name: cap-temp-auth
     type: org.cloudfoundry.managed-service
@@ -134,6 +166,13 @@ resources:
             existing_destinations_policy: update
       service: destination
       service-plan: lite
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
   - name: cap-temp-html5-repo-host
     type: org.cloudfoundry.managed-service
     parameters:
