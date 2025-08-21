@@ -1,6 +1,71 @@
 {
-  "scopes": [],
-  "attributes": [],
-  "role-templates": [],
-  "authorities-inheritance": false
+  "xsappname": "sfextension2",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.scopeforview"
+    },
+    {
+      "name": "$XSAPPNAME.scopeforcreate"
+    },
+    {
+      "name": "$XSAPPNAME.scopeformanage"
+    }
+  ],
+  "attributes": [
+    {
+      "name": "Country",
+      "valueType": "string",
+      "valueRequired": "false"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "UserRole",
+      "scope-references": [
+        "$XSAPPNAME.scopeforview"
+      ]
+    },
+    {
+      "name": "AssistantRole",
+      "scope-references": [
+        "$XSAPPNAME.scopeforview",
+        "$XSAPPNAME.scopeforcreate"
+      ],
+      "attribute-references": [
+        {
+          "name": "Country"
+        }
+      ]
+    },
+    {
+      "name": "ManagerRole",
+      "scope-references": [
+        "$XSAPPNAME.scopeforview",
+        "$XSAPPNAME.scopeforcreate",
+        "$XSAPPNAME.scopeformanage"
+      ]
+    }
+  ],
+  "authorities-inheritance": false,
+  "role-collections": [
+    {
+      "name": "UserRoles",
+      "role-template-references": [
+        "$XSAPPNAME.UserRole"
+      ]
+    },
+    {
+      "name": "ManagerRoles",
+      "role-template-references": [
+        "$XSAPPNAME.ManagerRole"
+      ]
+    },
+    {
+      "name": "AssistantRoles",
+      "role-template-references": [
+        "$XSAPPNAME.AssistantRole"
+      ]
+    }
+  ]
 }

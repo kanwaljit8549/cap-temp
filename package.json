@@ -30,9 +30,7 @@
   },
   "cds": {
     "requires": {
-      "[production]": {
-        "auth": "mocked"
-      },
+      "auth": "jwt",
       "destinations": true,
       "html5-runtime": true,
       "workzone": true
